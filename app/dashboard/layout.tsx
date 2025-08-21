@@ -15,7 +15,6 @@ export default function DashboardLayout({
       <div className="container flex flex-col gap-8 py-8">
         <div className="flex gap-4">
           <Link href="/dashboard">Dashboard</Link>
-          <Link href="/dashboard/test">Dashboard Test</Link>
         </div>
         <div>
           <Card className="p-6">{children}</Card>
