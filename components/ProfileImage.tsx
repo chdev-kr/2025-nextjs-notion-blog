@@ -21,7 +21,6 @@ export function ProfileImage() {
         width={144}
         height={144}
         className="object-cover"
-        priority
       />
     );
   }
@@ -33,7 +32,6 @@ export function ProfileImage() {
       width={144}
       height={144}
       className="object-cover"
-      priority
     />
   );
 }

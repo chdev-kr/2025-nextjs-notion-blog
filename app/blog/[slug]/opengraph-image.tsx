@@ -11,10 +11,9 @@ export const size = {
 export const contentType = 'image/png';
 
 // OG 이미지 생성 함수
-export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function OgImage({ params }: { params: { slug: string } }) {
   // 게시물 데이터 가져오기
-  const { post } = await getPostBySlug(slug);
+  const { post } = await getPostBySlug(params.slug);
 
   // 게시물이 없는 경우 기본 이미지 반환
   if (!post) {
@@ -115,9 +114,6 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
         </div>
       </div>
     ),
-    {
-      ...size,
-
-    }
+    { ...size }
   );
 }

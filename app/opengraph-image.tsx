@@ -10,7 +10,7 @@ export const size = {
 export const contentType = 'image/png';
 
 // OG 이미지 생성 함수
-export default async function OgImage() {
+export default function OgImage() {
   return new ImageResponse(
     (
       <div
@@ -50,7 +50,6 @@ export default async function OgImage() {
     ),
     {
       ...size,
-
     }
   );
 }
