@@ -17,10 +17,11 @@ export function ProfileImage() {
     return (
       <Image
         src="/images/profile-light.png"
-        alt="짐코딩"
+        alt="chDEV"
         width={144}
         height={144}
         className="object-cover"
+        priority
       />
     );
   }
@@ -28,10 +29,11 @@ export function ProfileImage() {
   return (
     <Image
       src={theme === 'light' ? '/images/profile-light.png' : '/images/profile-dark.png'}
-      alt="짐코딩"
+      alt="chDEV"
       width={144}
       height={144}
       className="object-cover"
+      priority
     />
   );
 }

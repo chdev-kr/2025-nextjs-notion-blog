@@ -1,23 +1,23 @@
-import { Youtube, Github, BookOpen, Instagram } from 'lucide-react';
+import { Github, BookOpen, Instagram } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProfileImage } from '@/components/ProfileImage';
 const socialLinks = [
-  {
-    icon: Youtube,
-    href: 'https://www.youtube.com/gymcoding',
-  },
+  // {
+  //   icon: Youtube,
+  //   href: 'https://www.youtube.com/gymcoding',
+  // },
   {
     icon: Github,
-    href: 'https://github.com/gymcoding',
+    href: 'https://github.com/chdev-kr',
   },
   {
     icon: BookOpen,
-    href: 'https://www.inflearn.com/users/432199/@gymcoding',
+    href: 'https://blog.naver.com/datachae',
   },
   {
     icon: Instagram,
-    href: 'https://www.instagram.com/gymcoding',
+    href: 'https://www.instagram.com/chdev.kr',
   },
 ];
 export default function ProfileSection() {
@@ -34,8 +34,8 @@ export default function ProfileSection() {
           </div>
 
           <div className="text-center">
-            <h3 className="text-lg font-bold">짐코딩</h3>
-            <p className="text-primary text-sm">Full Stack Developer</p>
+            <h3 className="text-lg font-bold">chDEV</h3>
+            <p className="text-primary text-sm">Frontend Developer</p>
           </div>
 
           <div className="flex justify-center gap-2">
@@ -48,7 +48,7 @@ export default function ProfileSection() {
             ))}
           </div>
 
-          <p className="bg-primary/10 rounded p-2 text-center text-sm">코딩 교육 크리에이터 ✨</p>
+          <p className="bg-primary/10 rounded p-2 text-center text-sm">프론트엔드 개발자 💻</p>
         </div>
       </CardContent>
     </Card>
