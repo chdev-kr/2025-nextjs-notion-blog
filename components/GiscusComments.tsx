@@ -5,10 +5,10 @@ export default function GiscusComments() {
   const { theme } = useTheme();
   return (
     <Giscus
-      repo="gymcoding/notion-blog-nextjs-giscus"
-      repoId="R_kgDOOHw4QQ"
+      repo="chdev-kr/2025-nextjs-notion-blog-gisc"
+      repoId="R_kgDOPhx5zQ"
       category="Announcements"
-      categoryId="DIC_kwDOOHw4Qc4Cn9v2"
+      categoryId="DIC_kwDOPhx5zc4CubGr"
       mapping="pathname"
       strict="0"
       reactionsEnabled="1"
