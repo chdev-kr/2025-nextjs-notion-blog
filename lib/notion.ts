@@ -7,6 +7,14 @@ import type {
 import { NotionToMarkdown } from 'notion-to-md';
 import { unstable_cache } from 'next/cache';
 
+// 환경변수 체크
+if (!process.env.NOTION_TOKEN) {
+  console.error('NOTION_TOKEN is not set');
+}
+if (!process.env.NOTION_DATABASE_ID) {
+  console.error('NOTION_DATABASE_ID is not set');
+}
+
 export const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
