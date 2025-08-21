@@ -150,6 +150,7 @@ http://localhost:3000
 **원인**: 팀 수준에서 환경변수를 설정했지만, 프로젝트에서 인식하지 못함
 
 **해결방법**:
+
 1. **Vercel 대시보드** → **프로젝트 직접 선택** (팀 설정이 아닌)
 2. **Settings** → **Environment Variables**
 3. **프로젝트 수준에서 환경변수 설정**:
@@ -164,6 +165,7 @@ http://localhost:3000
 ### **환경변수 디버깅 방법**
 
 배포 로그에서 환경변수가 제대로 읽히는지 확인:
+
 ```javascript
 console.log('NOTION_TOKEN exists:', !!process.env.NOTION_TOKEN);
 console.log('NOTION_DATABASE_ID exists:', !!process.env.NOTION_DATABASE_ID);
@@ -178,6 +180,7 @@ console.log('NOTION_DATABASE_ID exists:', !!process.env.NOTION_DATABASE_ID);
 ### **React 19 호환성 문제**
 
 일부 패키지가 React 19를 지원하지 않을 경우:
+
 ```bash
 npm install --legacy-peer-deps
 ```
@@ -186,25 +189,30 @@ npm install --legacy-peer-deps
 
 **문제**: 코드에서 브랜드명을 변경했는데 배포된 사이트에서 여전히 이전 텍스트가 표시되는 경우
 
-**원인**: 
+**원인**:
+
 - 일부 파일에서 텍스트가 완전히 변경되지 않음
 - Vercel 캐시 또는 CDN 캐시 지연
 - 브라우저 캐시 문제
 
 **해결방법**:
+
 1. **모든 파일에서 일괄 변경**:
+
    ```bash
    # 모든 TypeScript 파일에서 텍스트 일괄 변경
    find . -name "*.tsx" -not -path "./node_modules/*" -exec sed -i '' 's/이전텍스트/새텍스트/g' {} \;
    ```
 
 2. **변경사항 확인**:
+
    ```bash
    # 남아있는 이전 텍스트 검색
    grep -r "이전텍스트" . --exclude-dir=node_modules --exclude-dir=.git
    ```
 
 3. **강제 재배포**:
+
    ```bash
    # 빈 커밋으로 Vercel 재배포 트리거
    git commit --allow-empty -m "🔄 강제 재배포"
@@ -221,11 +229,13 @@ npm install --legacy-peer-deps
 이 프로젝트는 **Next.js의 동적 아이콘 생성 기능**을 사용합니다:
 
 **구현 방식**:
+
 - `app/icon.tsx`: 브랜드 "C" 문자를 동적으로 생성
 - 32x32px 크기의 검은 배경, 흰 글씨 원형 아이콘
 - Next.js ImageResponse API 사용
 
 **코드 예시**:
+
 ```tsx
 // app/icon.tsx
 export default function Icon() {
@@ -237,10 +247,12 @@ export default function Icon() {
 ```
 
 **아이콘 우선순위**:
+
 1. `app/icon.tsx` (동적 생성) - **최우선**
 2. `app/favicon.ico` (정적 파일)
 
 **커스터마이징**:
+
 - 브랜드명 변경: `icon.tsx`에서 "C" → 원하는 문자로 수정
 - 색상/스타일 변경: `style` 객체에서 `background`, `color` 수정
 - 정적 아이콘 사용: `icon.tsx` 삭제하고 `favicon.ico`만 사용
@@ -249,20 +261,23 @@ export default function Icon() {
 
 **문제**: favicon 관련 변경사항이 브라우저에서 반영되지 않는 경우
 
-**원인**: 
+**원인**:
+
 - 브라우저 favicon 캐시 (매우 강력한 캐시)
 - 동적/정적 아이콘 우선순위 혼동
 
 **해결방법**:
+
 1. **브라우저 캐시 강제 새로고침**:
    - `Cmd+Shift+R` (Mac) / `Ctrl+Shift+R` (Windows)
    - 또는 브라우저 개발자 도구에서 Network 탭 → Disable cache 체크 후 새로고침
 
 2. **아이콘 타입 선택**:
+
    ```bash
    # 동적 아이콘 사용 시 (현재 설정)
    # app/icon.tsx 파일에서 수정
-   
+
    # 정적 아이콘 사용 시
    rm app/icon.tsx  # 동적 아이콘 제거
    # app/favicon.ico 파일만 사용
@@ -272,23 +287,23 @@ export default function Icon() {
 
 **문제**: OpenGraph 이미지에서 "Internal Server Error" 발생하거나 이미지가 제대로 표시되지 않는 경우
 
-**원인**: 
+**원인**:
+
 - Next.js 15와 ImageResponse API 호환성 문제
 - `params` 타입 불일치 (Promise 타입 처리 필요)
 - `app/providers.tsx` 파일 손상 (종종 다른 파일 내용으로 덮어써짐)
 
 **해결방법**:
+
 1. **gymcoding 원본 코드 구조 사용**:
+
    ```tsx
    // app/opengraph-image.tsx
    export default function OgImage() {
-     return new ImageResponse(
-       (<div>...</div>),
-       { width: 1200, height: 630 }
-     );
+     return new ImageResponse(<div>...</div>, { width: 1200, height: 630 });
    }
-   
-   // app/blog/[slug]/opengraph-image.tsx  
+
+   // app/blog/[slug]/opengraph-image.tsx
    export default async function OgImage({ params }: { params: { slug: string } }) {
      const { post } = await getPostBySlug(params.slug);
      // ...
@@ -296,6 +311,7 @@ export default function Icon() {
    ```
 
 2. **providers.tsx 파일 정상 상태 확인**:
+
    ```tsx
    // app/providers.tsx (올바른 내용)
    'use client';
@@ -304,6 +320,7 @@ export default function Icon() {
    ```
 
 3. **캐시 삭제 후 재빌드**:
+
    ```bash
    rm -rf .next
    npm run build
@@ -318,12 +335,14 @@ export default function Icon() {
 Vercel에 배포된 프로젝트에 구매한 도메인을 연결하는 방법입니다.
 
 **1단계: Vercel에서 도메인 추가**
+
 1. **Vercel 대시보드** → **프로젝트 선택**
 2. **Settings** → **Domains** 탭
 3. **Add** 버튼 클릭
 4. 구매한 도메인 입력 (예: `chdev.kr`)
 
 **2단계: DNS 설정 (가비아 기준)**
+
 ```
 A 레코드:
 타입: A
@@ -339,16 +358,19 @@ TTL: 3600
 ```
 
 **3단계: 환경변수 업데이트**
+
 - **Vercel Settings** → **Environment Variables**
 - `NEXT_PUBLIC_SITE_URL=https://yourdomain.com`으로 변경
 - **Redeploy** 실행
 
 **4단계: 확인**
+
 - DNS 전파 시간: 10분 ~ 48시간
 - SSL 인증서: 자동 발급 (Let's Encrypt)
 - 확인 명령어: `nslookup yourdomain.com`
 
 **주의사항**:
+
 - 로컬 `.env.local` 파일은 `http://localhost:3000` 유지
 - Vercel 환경변수만 새 도메인으로 변경
 - DNS 전파 완료까지 기존 Vercel URL과 병행 사용 가능
