@@ -62,6 +62,15 @@ interface TocEntry {
   children?: Array<TocEntry>;
 }
 
+export const generateStaticParams = async () => {
+  const { posts } = await getPublishedPosts();
+  return posts.map((post) => ({
+    slug: post.slug,
+  }));
+};
+
+export const revalidate = 60;
+
 function TableOfContentsLink({ item }: { item: TocEntry }) {
   return (
     <div className="space-y-2">
@@ -83,25 +92,6 @@ function TableOfContentsLink({ item }: { item: TocEntry }) {
   );
 }
 
-export const generateStaticParams = async () => {
-  // 환경변수가 없을 때(빌드 시) 빈 배열 반환
-  if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
-    return [];
-  }
-
-  try {
-    const { posts } = await getPublishedPosts();
-    return posts.map((post) => ({
-      slug: post.slug,
-    }));
-  } catch (error) {
-    console.warn('Failed to generate static params:', error);
-    return [];
-  }
-};
-
-export const revalidate = 60;
-
 interface BlogPostProps {
   params: Promise<{ slug: string }>;
 }
@@ -115,7 +105,14 @@ export default async function BlogPost({ params }: BlogPostProps) {
   }
 
   const { data } = await compile(markdown, {
-    rehypePlugins: [withSlugs, rehypeSanitize, withToc, withTocExport],
+    rehypePlugins: [
+      withSlugs,
+      rehypeSanitize,
+      withToc,
+      withTocExport,
+      /** Optionally, provide a custom name for the export. */
+      // [withTocExport, { name: 'toc' }],
+    ],
   });
 
   return (
@@ -150,7 +147,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
           <Separator className="my-8" />
 
           {/* 모바일 전용 목차 */}
-          <div className="sticky top-[var(--sticky-top)] mb-6 md:hidden" suppressHydrationWarning>
+          <div className="sticky top-[var(--sticky-top)] mb-6 md:hidden">
             <details className="bg-muted/60 rounded-lg p-4 backdrop-blur-sm">
               <summary className="cursor-pointer text-lg font-semibold">목차</summary>
               <nav className="mt-3 space-y-3 text-sm">
@@ -183,12 +180,10 @@ export default async function BlogPost({ params }: BlogPostProps) {
           <div className="sticky top-[var(--sticky-top)]">
             <div className="bg-muted/60 space-y-4 rounded-lg p-6 backdrop-blur-sm">
               <h3 className="text-lg font-semibold">목차</h3>
-              <nav className="space-y-3 text-sm" suppressHydrationWarning>
-                {data?.toc && data.toc.length > 0 ? (
-                  data.toc.map((item) => <TableOfContentsLink key={item.id} item={item} />)
-                ) : (
-                  <p className="text-muted-foreground">목차가 없습니다.</p>
-                )}
+              <nav className="space-y-3 text-sm">
+                {data?.toc?.map((item) => (
+                  <TableOfContentsLink key={item.id} item={item} />
+                ))}
               </nav>
             </div>
           </div>

@@ -22,12 +22,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const resolvedSearchParams = await searchParams;
-  const { tag, sort } = resolvedSearchParams || {}; // searchParams가 undefined일 경우를 대비한 기본값 설정
+  const { tag, sort } = await searchParams;
   const selectedTag = tag || '전체';
   const selectedSort = sort || 'latest';
-
-  // 환경변수 체크 제거 - 런타임에서 API 호출 시 처리
 
   const tags = getTags();
   const postsPromise = getPublishedPosts({ tag: selectedTag, sort: selectedSort });
