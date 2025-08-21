@@ -7,8 +7,6 @@ import type {
 import { NotionToMarkdown } from 'notion-to-md';
 import { unstable_cache } from 'next/cache';
 
-// 환경변수 확인 완료 - 디버깅 코드 제거
-
 export const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
