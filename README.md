@@ -288,12 +288,14 @@ export default function Icon() {
 Vercel에 배포된 프로젝트에 구매한 도메인을 연결하는 방법입니다.
 
 **1단계: Vercel에서 도메인 추가**
+
 1. **Vercel 대시보드** → **프로젝트 선택**
 2. **Settings** → **Domains** 탭
 3. **Add** 버튼 클릭
 4. 구매한 도메인 입력 (예: `chdev.kr`)
 
 **2단계: DNS 설정 (가비아 기준)**
+
 ```
 A 레코드:
 타입: A
@@ -309,16 +311,19 @@ TTL: 3600
 ```
 
 **3단계: 환경변수 업데이트**
+
 - **Vercel Settings** → **Environment Variables**
 - `NEXT_PUBLIC_SITE_URL=https://yourdomain.com`으로 변경
 - **Redeploy** 실행
 
 **4단계: 확인**
+
 - DNS 전파 시간: 10분 ~ 48시간
 - SSL 인증서: 자동 발급 (Let's Encrypt)
 - 확인 명령어: `nslookup yourdomain.com`
 
 **주의사항**:
+
 - 로컬 `.env.local` 파일은 `http://localhost:3000` 유지
 - Vercel 환경변수만 새 도메인으로 변경
 - DNS 전파 완료까지 기존 Vercel URL과 병행 사용 가능

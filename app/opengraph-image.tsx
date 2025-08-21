@@ -1,14 +1,16 @@
 import { ImageResponse } from 'next/og';
+
 // 이미지 크기 정의
 export const size = {
   width: 1200,
   height: 630,
 };
+
 // 이미지 콘텐츠 타입 정의
 export const contentType = 'image/png';
 
 // OG 이미지 생성 함수
-export default function OgImage() {
+export default async function OgImage() {
   return new ImageResponse(
     (
       <div
@@ -48,6 +50,7 @@ export default function OgImage() {
     ),
     {
       ...size,
+
     }
   );
 }
