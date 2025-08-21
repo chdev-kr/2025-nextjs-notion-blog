@@ -84,10 +84,20 @@ function TableOfContentsLink({ item }: { item: TocEntry }) {
 }
 
 export const generateStaticParams = async () => {
-  const { posts } = await getPublishedPosts();
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
+  // 환경변수가 없을 때(빌드 시) 빈 배열 반환
+  if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
+    return [];
+  }
+  
+  try {
+    const { posts } = await getPublishedPosts();
+    return posts.map((post) => ({
+      slug: post.slug,
+    }));
+  } catch (error) {
+    console.warn('Failed to generate static params:', error);
+    return [];
+  }
 };
 
 export const revalidate = 60;

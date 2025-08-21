@@ -2,14 +2,30 @@ import { getPublishedPosts } from '@/lib/notion';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+  // 환경변수 체크
+  if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
+    return NextResponse.json(
+      { error: 'Notion API credentials not configured' },
+      { status: 500 }
+    );
+  }
 
-  const tag = searchParams.get('tag') || undefined;
-  const sort = searchParams.get('sort') || undefined;
-  const startCursor = searchParams.get('startCursor') || undefined;
-  const pageSize = Number(searchParams.get('pageSize')) || undefined;
+  try {
+    const searchParams = request.nextUrl.searchParams;
 
-  const response = await getPublishedPosts({ tag, sort, startCursor, pageSize });
+    const tag = searchParams.get('tag') || undefined;
+    const sort = searchParams.get('sort') || undefined;
+    const startCursor = searchParams.get('startCursor') || undefined;
+    const pageSize = Number(searchParams.get('pageSize')) || undefined;
 
-  return NextResponse.json(response);
+    const response = await getPublishedPosts({ tag, sort, startCursor, pageSize });
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch posts' },
+      { status: 500 }
+    );
+  }
 }
