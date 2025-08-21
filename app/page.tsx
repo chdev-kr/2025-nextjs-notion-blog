@@ -32,7 +32,7 @@ export default async function Home({ searchParams }: HomeProps) {
     return (
       <div className="container py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Notion 블로그</h1>
+          <h1 className="mb-4 text-2xl font-bold">Notion 블로그</h1>
           <p className="text-muted-foreground">
             환경변수를 설정해주세요. (NOTION_TOKEN, NOTION_DATABASE_ID)
           </p>

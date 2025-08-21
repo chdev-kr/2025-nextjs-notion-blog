@@ -4,10 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   // 환경변수 체크
   if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
-    return NextResponse.json(
-      { error: 'Notion API credentials not configured' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Notion API credentials not configured' }, { status: 500 });
   }
 
   try {
@@ -23,9 +20,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch posts' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
   }
 }

@@ -88,7 +88,7 @@ export const generateStaticParams = async () => {
   if (!process.env.NOTION_TOKEN || !process.env.NOTION_DATABASE_ID) {
     return [];
   }
-  
+
   try {
     const { posts } = await getPublishedPosts();
     return posts.map((post) => ({

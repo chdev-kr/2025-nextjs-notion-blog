@@ -56,8 +56,14 @@ npm install --legacy-peer-deps
 # .env.local 파일 생성
 NOTION_TOKEN=your_notion_api_key
 NOTION_DATABASE_ID=your_notion_database_id
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=https://your-vercel-domain.vercel.app
 ```
+
+> **Vercel 배포 시**:
+>
+> - `your-vercel-domain.vercel.app`는 Vercel 배포 후 생성되는 실제 도메인으로 교체
+> - 예: `https://notion-blog-abc123.vercel.app`
+> - Vercel 대시보드 → 프로젝트 → Domains에서 확인 가능
 
 4. **개발 서버 실행**
 
