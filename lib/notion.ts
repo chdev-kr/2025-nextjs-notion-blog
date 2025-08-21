@@ -7,6 +7,13 @@ import type {
 import { NotionToMarkdown } from 'notion-to-md';
 import { unstable_cache } from 'next/cache';
 
+// 환경변수 디버깅
+console.log('🔍 Environment Check:');
+console.log('NOTION_TOKEN exists:', !!process.env.NOTION_TOKEN);
+console.log('NOTION_TOKEN length:', process.env.NOTION_TOKEN?.length || 0);
+console.log('NOTION_DATABASE_ID exists:', !!process.env.NOTION_DATABASE_ID);
+console.log('NOTION_DATABASE_ID length:', process.env.NOTION_DATABASE_ID?.length || 0);
+
 export const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
