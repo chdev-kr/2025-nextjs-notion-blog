@@ -17,7 +17,7 @@ export function ProfileImage() {
     return (
       <Image
         src="/images/profile-light.png"
-        alt="chDEV"
+        alt="파마를 하고 동그란 안경을 쓰고 있는 chDEV"
         width={144}
         height={144}
         className="object-cover"
@@ -28,7 +28,7 @@ export function ProfileImage() {
   return (
     <Image
       src={theme === 'light' ? '/images/profile-light.png' : '/images/profile-dark.png'}
-      alt="chDEV"
+      alt="파마를 하고 동그란 안경을 쓰고 있는 chDEV"
       width={144}
       height={144}
       className="object-cover"

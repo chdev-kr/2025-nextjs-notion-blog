@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | 김채현 블로그',
-    default: '김채현 블로그',
+    template: '%s | chDEV 블로그',
+    default: 'chDEV 블로그',
   },
   description: '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 블로그입니다.',
   keywords: ['Next.js', '프론트엔드', '웹개발', '코딩', '프로그래밍', '리액트'],

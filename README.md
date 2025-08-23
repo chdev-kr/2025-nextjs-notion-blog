@@ -283,7 +283,143 @@ export default function Icon() {
    # app/favicon.ico 파일만 사용
    ```
 
-### **OpenGraph 이미지 생성 오류**
+### **OpenGraph 이미지 및 메타데이터 문제**
+
+**문제**: OpenGraph 이미지가 안 뜨거나, 소셜 미디어 공유 시 제목/설명이 제대로 표시되지 않는 경우
+
+**원인**:
+
+- `NEXT_PUBLIC_SITE_URL` 환경변수 누락
+- OpenGraph 메타데이터 설정 불완전
+- Hydration 에러로 인한 SSR/CSR 불일치
+
+**해결방법**:
+
+1. **환경변수 추가**:
+
+   ```bash
+   # .env.local 파일에 추가
+   NEXT_PUBLIC_SITE_URL=https://your-vercel-domain.vercel.app
+   ```
+
+2. **layout.tsx 메타데이터 개선**:
+
+   ```tsx
+   export const metadata: Metadata = {
+     // ... 기존 설정
+     openGraph: {
+       type: 'website',
+       locale: 'ko_KR',
+       url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+       title: '김채현 블로그',
+       description: '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 블로그입니다.',
+       siteName: '김채현 블로그',
+       images: [
+         {
+           url: '/opengraph-image',
+           width: 1200,
+           height: 630,
+           alt: '김채현 블로그 OG 이미지',
+         },
+       ],
+     },
+     twitter: {
+       card: 'summary_large_image',
+       title: '김채현 블로그',
+       description: '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 블로그입니다.',
+       images: ['/opengraph-image'],
+     },
+   };
+   ```
+
+3. **page.tsx 메타데이터 추가**:
+
+   ```tsx
+   export const metadata: Metadata = {
+     title: '홈',
+     description: '프론트엔드 개발자 김채현의 블로그입니다.',
+     openGraph: {
+       title: '김채현 블로그 - 홈',
+       description: '프론트엔드 개발자 김채현의 블로그입니다.',
+       url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+       siteName: '김채현 블로그',
+       images: [
+         {
+           url: '/opengraph-image',
+           width: 1200,
+           height: 630,
+           alt: '김채현 블로그 OG 이미지',
+         },
+       ],
+     },
+     twitter: {
+       card: 'summary_large_image',
+       title: '김채현 블로그 - 홈',
+       description: '프론트엔드 개발자 김채현의 블로그입니다.',
+       images: ['/opengraph-image'],
+     },
+   };
+   ```
+
+4. **테스트 방법**:
+   - 브라우저에서 `http://localhost:3000/opengraph-image` 접속
+   - Facebook Debugger: https://developers.facebook.com/tools/debug/
+   - Twitter Card Validator: https://cards-dev.twitter.com/validator
+
+### **React Hydration 에러 해결**
+
+**문제**: 콘솔에 "Hydration failed because the server rendered HTML didn't match the client" 에러 발생
+
+**원인**:
+
+- `next-themes` 라이브러리의 서버/클라이언트 불일치
+- 테마 관련 컴포넌트들이 서버와 클라이언트에서 다르게 렌더링
+- 배포 환경에서 SEO 및 성능 문제 발생 가능
+
+**해결방법** (gymcoding 방식):
+
+1. **mounted 패턴 적용**:
+
+   ```tsx
+   // 모든 테마 관련 컴포넌트에 적용
+   const [mounted, setMounted] = useState(false);
+
+   useEffect(() => {
+     setMounted(true);
+   }, []);
+
+   // 서버사이드 렌더링 시에는 기본값 사용
+   if (!mounted) {
+     return <기본컴포넌트 />;
+   }
+   ```
+
+2. **수정된 컴포넌트들**:
+   - `components/ProfileImage.tsx`
+   - `components/theme/ThemeToggle.tsx`
+   - `components/GiscusComments.tsx`
+   - `components/ui/sonner.tsx`
+
+3. **layout.tsx에서 suppressHydrationWarning 추가**:
+
+   ```tsx
+   <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+   ```
+
+**해결 원리**:
+
+- **서버사이드**: 모든 컴포넌트가 기본값(light 테마)으로 렌더링
+- **클라이언트 마운트**: `useEffect`로 `mounted` 상태를 `true`로 변경
+- **테마 적용**: 실제 사용자 테마로 다시 렌더링
+
+**결과**:
+
+- ✅ Hydration 에러 해결
+- ✅ SEO 최적화 유지
+- ✅ 사용자 경험 개선
+- ✅ 배포 환경 안정성 확보
+
+### **OpenGraph 이미지 생성 오류 (기존)**
 
 **문제**: OpenGraph 이미지에서 "Internal Server Error" 발생하거나 이미지가 제대로 표시되지 않는 경우
 
@@ -374,6 +510,68 @@ TTL: 3600
 - 로컬 `.env.local` 파일은 `http://localhost:3000` 유지
 - Vercel 환경변수만 새 도메인으로 변경
 - DNS 전파 완료까지 기존 Vercel URL과 병행 사용 가능
+
+### **Turbopack 설정 경고 해결**
+
+**문제**: 개발 서버 실행 시 "Invalid next.config.ts options detected" 경고 발생
+
+**원인**:
+
+- Next.js 15의 Turbopack 설정에서 인식하지 못하는 옵션 사용
+- `conditions` 키가 Turbopack에서 지원되지 않음
+
+**해결방법**:
+
+1. **next.config.ts 수정**:
+
+   ```tsx
+   import type { NextConfig } from 'next';
+   import createMDX from '@next/mdx';
+
+   const nextConfig: NextConfig = {
+     // turbopack 설정 제거 또는 수정
+     // turbopack: {
+     //   // 지원되지 않는 옵션 제거
+     // },
+     images: {
+       remotePatterns: [
+         {
+           hostname: 'picsum.photos',
+         },
+         {
+           hostname: 'images.unsplash.com',
+         },
+         {
+           hostname: 'prod-files-secure.s3.us-west-2.amazonaws.com',
+         },
+         {
+           hostname: 'www.notion.so',
+         },
+         {
+           hostname: 'www.books.weniv.co.kr',
+         },
+       ],
+     },
+     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'mdx', 'md'],
+   };
+
+   const withMDX = createMDX({
+     options: {
+       // remarkPlugins: [remarkGfm],
+     },
+   });
+
+   export default withMDX(nextConfig);
+   ```
+
+2. **또는 Turbopack 비활성화**:
+
+   ```bash
+   # package.json의 dev 스크립트 수정
+   "dev": "next dev"  # --turbopack 제거
+   ```
+
+**참고**: Turbopack은 아직 베타 단계이므로 안정성을 위해 일반 Next.js 개발 서버 사용을 권장합니다.
 
 ## 📜 스크립트
 
