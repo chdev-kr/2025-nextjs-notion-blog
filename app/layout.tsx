@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/layouts/Header';
 import Footer from '@/components/layouts/Footer';
 import Providers from './providers';
+import Script from 'next/script';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -47,19 +48,37 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="ko-KR" suppressHydrationWarning>
+      <head>
+        {/* 구글 애널리틱스 */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+          `}
+        </Script>
+
+        {/* 네이버 웹마스터 도구 */}
+        <meta name="naver-site-verification" content="75d6266603a8a1ea177f59652a9b7090c349aebb" />
+
+        {/* 구글 서치 콘솔 */}
+        <meta
+          name="google-site-verification"
+          content={process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION}
+        />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <Providers>
           <div className="flex min-h-screen flex-col">
-            {/* Header 영역 */}
             <Header />
-            {/* Main 영역 */}
             <main className="flex-1">{children}</main>
-
-            {/* Modal 영역 */}
             {modal}
-
-            {/* Footer 영역 */}
             <Footer />
           </div>
         </Providers>

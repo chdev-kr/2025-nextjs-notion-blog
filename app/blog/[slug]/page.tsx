@@ -17,6 +17,46 @@ import { notFound } from 'next/navigation';
 import { getPublishedPosts } from '@/lib/notion';
 import { Metadata } from 'next';
 
+// 구조화된 데이터 생성 함수
+function generateStructuredData(post: {
+  title: string;
+  description?: string;
+  author?: string;
+  date: string;
+  modifiedDate?: string;
+  slug: string;
+  tags?: string[];
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    author: {
+      '@type': 'Person',
+      name: post.author || 'chDEV',
+      url: 'https://github.com/chdev-kr',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'chDEV',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/images/profile-light.png`,
+      },
+    },
+    datePublished: post.date,
+    dateModified: post.modifiedDate || post.date,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${process.env.NEXT_PUBLIC_SITE_URL}/blog/${post.slug}`,
+    },
+    keywords: post.tags?.join(', '),
+    articleSection: '프론트엔드 개발',
+    inLanguage: 'ko-KR',
+  };
+}
+
 // 동적 메타데이터 생성
 export async function generateMetadata({
   params,
@@ -115,80 +155,96 @@ export default async function BlogPost({ params }: BlogPostProps) {
     ],
   });
 
+  // 구조화된 데이터 JSON-LD 스크립트
+  const structuredData = generateStructuredData({
+    ...post,
+    date: post.date || new Date().toISOString(),
+  });
+
   return (
-    <div className="container py-6 md:py-8 lg:py-12">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_1fr_240px] md:gap-8">
-        <aside className="hidden md:block">{/* 추후 콘텐츠 추가 */}</aside>
-        <section className="overflow-hidden">
-          {/* 블로그 헤더 */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                {post.tags?.map((tag) => (
-                  <Badge key={tag}>{tag}</Badge>
-                ))}
+    <>
+      {/* 구조화된 데이터 스크립트 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData),
+        }}
+      />
+
+      <div className="container py-6 md:py-8 lg:py-12">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_1fr_240px] md:gap-8">
+          <aside className="hidden md:block">{/* 추후 콘텐츠 추가 */}</aside>
+          <section className="overflow-hidden">
+            {/* 블로그 헤더 */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  {post.tags?.map((tag) => (
+                    <Badge key={tag}>{tag}</Badge>
+                  ))}
+                </div>
+                <h1 className="text-3xl font-bold md:text-4xl">{post.title}</h1>
               </div>
-              <h1 className="text-3xl font-bold md:text-4xl">{post.title}</h1>
+
+              {/* 메타 정보 */}
+              <div className="text-muted-foreground flex gap-4 text-sm">
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  <span>{post.author}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CalendarDays className="h-4 w-4" />
+                  <span>{formatDate(post.date)}</span>
+                </div>
+              </div>
             </div>
 
-            {/* 메타 정보 */}
-            <div className="text-muted-foreground flex gap-4 text-sm">
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                <span>{post.author}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <CalendarDays className="h-4 w-4" />
-                <span>{formatDate(post.date)}</span>
+            <Separator className="my-8" />
+
+            {/* 모바일 전용 목차 */}
+            <div className="sticky top-[var(--sticky-top)] mb-6 md:hidden">
+              <details className="bg-muted/60 rounded-lg p-4 backdrop-blur-sm">
+                <summary className="cursor-pointer text-lg font-semibold">목차</summary>
+                <nav className="mt-3 space-y-3 text-sm">
+                  {data?.toc?.map((item) => (
+                    <TableOfContentsLink key={item.id} item={item} />
+                  ))}
+                </nav>
+              </details>
+            </div>
+
+            {/* 블로그 본문 */}
+            <div className="prose prose-neutral dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] max-w-none">
+              <MDXRemote
+                source={markdown}
+                options={{
+                  mdxOptions: {
+                    remarkPlugins: [remarkGfm],
+                    rehypePlugins: [withSlugs, rehypeSanitize, rehypePrettyCode],
+                  },
+                }}
+              />
+            </div>
+
+            <Separator className="my-16" />
+
+            {/* 이전/다음 포스트 네비게이션 */}
+            <GiscusComments />
+          </section>
+          <aside className="relative hidden md:block">
+            <div className="sticky top-[var(--sticky-top)]">
+              <div className="bg-muted/60 space-y-4 rounded-lg p-6 backdrop-blur-sm">
+                <h3 className="text-lg font-semibold">목차</h3>
+                <nav className="space-y-3 text-sm">
+                  {data?.toc?.map((item) => (
+                    <TableOfContentsLink key={item.id} item={item} />
+                  ))}
+                </nav>
               </div>
             </div>
-          </div>
-
-          <Separator className="my-8" />
-
-          {/* 모바일 전용 목차 */}
-          <div className="sticky top-[var(--sticky-top)] mb-6 md:hidden">
-            <details className="bg-muted/60 rounded-lg p-4 backdrop-blur-sm">
-              <summary className="cursor-pointer text-lg font-semibold">목차</summary>
-              <nav className="mt-3 space-y-3 text-sm">
-                {data?.toc?.map((item) => (
-                  <TableOfContentsLink key={item.id} item={item} />
-                ))}
-              </nav>
-            </details>
-          </div>
-
-          {/* 블로그 본문 */}
-          <div className="prose prose-neutral dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] max-w-none">
-            <MDXRemote
-              source={markdown}
-              options={{
-                mdxOptions: {
-                  remarkPlugins: [remarkGfm],
-                  rehypePlugins: [withSlugs, rehypeSanitize, rehypePrettyCode],
-                },
-              }}
-            />
-          </div>
-
-          <Separator className="my-16" />
-
-          {/* 이전/다음 포스트 네비게이션 */}
-          <GiscusComments />
-        </section>
-        <aside className="relative hidden md:block">
-          <div className="sticky top-[var(--sticky-top)]">
-            <div className="bg-muted/60 space-y-4 rounded-lg p-6 backdrop-blur-sm">
-              <h3 className="text-lg font-semibold">목차</h3>
-              <nav className="space-y-3 text-sm">
-                {data?.toc?.map((item) => (
-                  <TableOfContentsLink key={item.id} item={item} />
-                ))}
-              </nav>
-            </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -511,68 +511,6 @@ TTL: 3600
 - Vercel 환경변수만 새 도메인으로 변경
 - DNS 전파 완료까지 기존 Vercel URL과 병행 사용 가능
 
-### **Turbopack 설정 경고 해결**
-
-**문제**: 개발 서버 실행 시 "Invalid next.config.ts options detected" 경고 발생
-
-**원인**:
-
-- Next.js 15의 Turbopack 설정에서 인식하지 못하는 옵션 사용
-- `conditions` 키가 Turbopack에서 지원되지 않음
-
-**해결방법**:
-
-1. **next.config.ts 수정**:
-
-   ```tsx
-   import type { NextConfig } from 'next';
-   import createMDX from '@next/mdx';
-
-   const nextConfig: NextConfig = {
-     // turbopack 설정 제거 또는 수정
-     // turbopack: {
-     //   // 지원되지 않는 옵션 제거
-     // },
-     images: {
-       remotePatterns: [
-         {
-           hostname: 'picsum.photos',
-         },
-         {
-           hostname: 'images.unsplash.com',
-         },
-         {
-           hostname: 'prod-files-secure.s3.us-west-2.amazonaws.com',
-         },
-         {
-           hostname: 'www.notion.so',
-         },
-         {
-           hostname: 'www.books.weniv.co.kr',
-         },
-       ],
-     },
-     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'mdx', 'md'],
-   };
-
-   const withMDX = createMDX({
-     options: {
-       // remarkPlugins: [remarkGfm],
-     },
-   });
-
-   export default withMDX(nextConfig);
-   ```
-
-2. **또는 Turbopack 비활성화**:
-
-   ```bash
-   # package.json의 dev 스크립트 수정
-   "dev": "next dev"  # --turbopack 제거
-   ```
-
-**참고**: Turbopack은 아직 베타 단계이므로 안정성을 위해 일반 Next.js 개발 서버 사용을 권장합니다.
-
 ## 📜 스크립트
 
 ```bash
@@ -597,5 +535,3 @@ npm run format       # Prettier 포맷팅
 이 프로젝트는 MIT 라이선스 하에 있습니다.
 
 ---
-
-**📧 문의**: 문제나 제안사항이 있으시면 Issue를 생성해 주세요!
