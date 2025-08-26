@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { getPublishedPosts } from '@/lib/notion';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // www 서브도메인을 포함한 기본 URL로 수정
+  // 기본 URL 설정 (www 포함)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.chdev.kr';
 
   // 기본 정적 페이지 (항상 반환)
