@@ -466,6 +466,117 @@ export default function Icon() {
    - [https://developers.facebook.com/tools/debug/](https://developers.facebook.com/tools/debug/)
    - URL 입력 후 "Scrape Again" 클릭
 
+### **사이트맵 제출 실패 문제**
+
+**문제**: Google Search Console이나 Naver Search Advisor에서 사이트맵을 제출했는데 "올바른 사이트맵이 아니다" 또는 "사이트맵을 찾을 수 없다"는 에러가 발생하는 경우
+
+**원인**:
+
+- **URL 불일치**: 사이트맵 내 URL과 실제 접근 가능한 URL이 다름
+- **도메인 리다이렉션**: `example.com` → `www.example.com` 리다이렉션으로 인한 혼란
+- **robots.txt 설정 부족**: 검색엔진이 사이트맵을 찾을 수 있는 명확한 경로 없음
+
+**해결방법**:
+
+1. **사이트맵 URL 수정**:
+
+   ```typescript
+   // app/sitemap.ts
+   export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+     // www 서브도메인을 포함한 기본 URL로 수정
+     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.chdev.kr';
+     
+     // 모든 URL이 실제 접근 가능한 도메인으로 통일
+     const staticPages: MetadataRoute.Sitemap = [
+       {
+         url: baseUrl,  // https://www.chdev.kr
+         lastModified: new Date(),
+         changeFrequency: 'daily' as const,
+         priority: 1,
+       },
+       // ... 다른 페이지들
+     ];
+   }
+   ```
+
+2. **robots.txt 개선**:
+
+   ```typescript
+   // app/robots.ts
+   export default function robots(): MetadataRoute.Robots {
+     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.chdev.kr';
+     
+     return {
+       rules: {
+         userAgent: '*',
+         allow: '/',
+         disallow: ['/dashboard/', '/api/'],
+       },
+       sitemap: `${baseUrl}/sitemap.xml`,  // 올바른 사이트맵 경로
+     };
+   }
+   ```
+
+3. **Next.js 설정에 헤더 추가**:
+
+   ```typescript
+   // next.config.ts
+   async headers() {
+     return [
+       {
+         source: '/sitemap.xml',
+         headers: [
+           {
+             key: 'Content-Type',
+             value: 'application/xml',
+           },
+           {
+             key: 'Cache-Control',
+             value: 'public, max-age=3600, s-maxage=3600',
+           },
+         ],
+       },
+       {
+         source: '/robots.txt',
+         headers: [
+           {
+             key: 'Content-Type',
+             value: 'text/plain',
+           },
+           {
+             key: 'Cache-Control',
+             value: 'public, max-age=3600, s-maxage=3600',
+           },
+         ],
+       },
+     ];
+   }
+   ```
+
+4. **배포 후 확인**:
+
+   ```bash
+   # 사이트맵 접근 확인
+   curl -I https://www.chdev.kr/sitemap.xml
+   
+   # robots.txt 접근 확인
+   curl -I https://www.chdev.kr/robots.txt
+   
+   # 사이트맵 내용 확인
+   curl https://www.chdev.kr/sitemap.xml
+   ```
+
+5. **검색엔진에 올바른 URL 제출**:
+
+   - **Google Search Console**: `https://www.chdev.kr/sitemap.xml`
+   - **Naver Search Advisor**: `https://www.chdev.kr/sitemap.xml`
+
+**주의사항**:
+
+- 도메인 리다이렉션이 있는 경우 실제 접근 가능한 URL을 사용
+- 환경 변수 `NEXT_PUBLIC_SITE_URL`이 올바르게 설정되어 있는지 확인
+- 배포 후 캐시 갱신까지 시간이 필요할 수 있음
+
 ### **커스텀 도메인 연결**
 
 Vercel에 배포된 프로젝트에 구매한 도메인을 연결하는 방법입니다.
