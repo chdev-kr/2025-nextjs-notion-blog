@@ -26,7 +26,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const selectedTag = tag || '전체';
   const selectedSort = sort || 'latest';
 
-  const tags = getTags();
+  const tagsPromise = getTags();
   const postsPromise = getPublishedPosts({ tag: selectedTag, sort: selectedSort });
   return (
     <div className="container py-8">
@@ -34,7 +34,7 @@ export default async function Home({ searchParams }: HomeProps) {
         {/* 좌측 사이드바 */}
         <aside className="order-2 md:order-none">
           <Suspense fallback={<TagSectionSkeleton />}>
-            <TagSectionClient tags={tags} selectedTag={selectedTag} />
+            <TagSectionClient tags={tagsPromise} selectedTag={selectedTag} />
           </Suspense>
         </aside>
         <div className="order-3 space-y-8 md:order-none">

@@ -485,11 +485,11 @@ export default function Icon() {
    export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      // www 서브도메인을 포함한 기본 URL로 수정
      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.chdev.kr';
-     
+
      // 모든 URL이 실제 접근 가능한 도메인으로 통일
      const staticPages: MetadataRoute.Sitemap = [
        {
-         url: baseUrl,  // https://www.chdev.kr
+         url: baseUrl, // https://www.chdev.kr
          lastModified: new Date(),
          changeFrequency: 'daily' as const,
          priority: 1,
@@ -505,14 +505,14 @@ export default function Icon() {
    // app/robots.ts
    export default function robots(): MetadataRoute.Robots {
      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.chdev.kr';
-     
+
      return {
        rules: {
          userAgent: '*',
          allow: '/',
          disallow: ['/dashboard/', '/api/'],
        },
-       sitemap: `${baseUrl}/sitemap.xml`,  // 올바른 사이트맵 경로
+       sitemap: `${baseUrl}/sitemap.xml`, // 올바른 사이트맵 경로
      };
    }
    ```
@@ -558,16 +558,15 @@ export default function Icon() {
    ```bash
    # 사이트맵 접근 확인
    curl -I https://www.chdev.kr/sitemap.xml
-   
+
    # robots.txt 접근 확인
    curl -I https://www.chdev.kr/robots.txt
-   
+
    # 사이트맵 내용 확인
    curl https://www.chdev.kr/sitemap.xml
    ```
 
 5. **검색엔진에 올바른 URL 제출**:
-
    - **Google Search Console**: `https://www.chdev.kr/sitemap.xml`
    - **Naver Search Advisor**: `https://www.chdev.kr/sitemap.xml`
 
@@ -646,3 +645,217 @@ npm run format       # Prettier 포맷팅
 이 프로젝트는 MIT 라이선스 하에 있습니다.
 
 ---
+
+### **태그 목록과 실제 게시물 불일치 문제**
+
+**문제**: 로컬에서는 태그 목록이 정확한데, 배포된 사이트에서는 잘못된 태그나 숫자가 표시되는 경우
+
+**증상**:
+
+- 로컬: 태그 목록이 실제 게시물과 일치
+- 프로덕션: 존재하지 않는 태그 표시, 잘못된 숫자 표시
+
+**원인**:
+
+1. **캐싱 문제**: 빌드 시점의 오래된 데이터가 캐시됨
+2. **빌드 타임 vs 런타임 차이**: 로컬은 실시간, 프로덕션은 빌드 시점 데이터
+3. **캐시 태그 혼재**: 태그와 게시물이 같은 캐시를 공유
+
+**해결방법**:
+
+1. **캐시 분리 및 재검증 설정**:
+
+   ```typescript
+   // lib/notion.ts
+   export const getTags = unstable_cache(
+     async (): Promise<TagFilterItem[]> => {
+       const { posts } = await getPublishedPosts({ pageSize: 100 });
+
+       // 태그 계산 로직
+       const tagCount = posts.reduce(
+         (acc, post) => {
+           post.tags?.forEach((tag) => {
+             acc[tag] = (acc[tag] || 0) + 1;
+           });
+           return acc;
+         },
+         {} as Record<string, number>
+       );
+
+       // TagFilterItem 형식으로 변환
+       const tags: TagFilterItem[] = Object.entries(tagCount).map(([name, count]) => ({
+         id: name,
+         name,
+         count,
+       }));
+
+       // "전체" 태그 추가
+       tags.unshift({
+         id: 'all',
+         name: '전체',
+         count: posts.length,
+       });
+
+       return tags;
+     },
+     undefined,
+     {
+       tags: ['tags'], // 별도 캐시 태그 사용
+       revalidate: 3600, // 1시간마다 재검증
+     }
+   );
+   ```
+
+2. **Promise 기반 컴포넌트 구조**:
+
+   ```typescript
+   // app/page.tsx
+   export default async function Home({ searchParams }: HomeProps) {
+     const { tag, sort } = await searchParams;
+     const selectedTag = tag || '전체';
+     const selectedSort = sort || 'latest';
+
+     const tagsPromise = getTags(); // Promise 그대로 전달
+     const postsPromise = getPublishedPosts({ tag: selectedTag, sort: selectedSort });
+
+     return (
+       <div className="container py-8">
+         <div className="grid grid-cols-1 gap-6 md:grid-cols-[200px_1fr_220px]">
+           <aside className="order-2 md:order-none">
+             <Suspense fallback={<TagSectionSkeleton />}>
+               <TagSectionClient tags={tagsPromise} selectedTag={selectedTag} />
+             </Suspense>
+           </aside>
+           {/* ... 나머지 컴포넌트들 */}
+         </div>
+       </div>
+     );
+   }
+   ```
+
+3. **클라이언트 컴포넌트에서 use() 훅 사용**:
+
+   ```typescript
+   // app/_components/TagSection.client.tsx
+   'use client';
+
+   import { use } from 'react';
+
+   interface TagSectionProps {
+     tags: Promise<TagFilterItem[]>;
+     selectedTag: string;
+   }
+
+   export default function TagSection({ tags, selectedTag }: TagSectionProps) {
+     const allTags = use(tags); // Promise 해결
+
+     return (
+       <Card>
+         <CardHeader>
+           <CardTitle>태그 목록</CardTitle>
+         </CardHeader>
+         <CardContent>
+           <div className="flex flex-col gap-3">
+             {allTags.map((tag) => (
+               <Link href={`?tag=${tag.name}`} key={tag.name}>
+                 <div className={cn(
+                   'hover:bg-muted-foreground/10 text-muted-foreground flex items-center justify-between rounded-md p-1.5 text-sm transition-colors',
+                   selectedTag === tag.name && 'bg-muted-foreground/10 text-foreground font-medium'
+                 )}>
+                   <span>{tag.name}</span>
+                   <span>{tag.count}</span>
+                 </div>
+               </Link>
+             ))}
+           </div>
+         </CardContent>
+       </Card>
+     );
+   }
+   ```
+
+4. **캐시 무효화 함수 추가**:
+
+   ```typescript
+   // lib/notion.ts
+   import { revalidateTag } from 'next/cache';
+
+   // 캐시 무효화 함수
+   export const revalidateCache = () => {
+     revalidateTag('posts');
+     revalidateTag('tags');
+   };
+
+   // 새 포스트 생성 시 자동 캐시 무효화
+   export const createPost = async ({ title, tag, content }: CreatePostParams) => {
+     const response = await notion.pages.create({
+       // ... 포스트 생성 로직
+     });
+
+     // 새 포스트 생성 후 캐시 무효화
+     revalidateTag('posts');
+     revalidateTag('tags');
+
+     return response;
+   };
+   ```
+
+**해결 원리**:
+
+1. **캐시 분리**: 태그와 게시물을 별도 캐시로 관리
+2. **재검증 시간**: 1시간마다 자동으로 최신 데이터로 업데이트
+3. **스트리밍 SSR**: Promise 기반으로 점진적 로딩
+4. **자동 무효화**: 새 콘텐츠 생성 시 캐시 자동 새로고침
+
+**결과**:
+
+- ✅ **정확한 태그 목록**: 실제 게시물에 있는 태그만 표시
+- ✅ **정확한 숫자**: 각 태그의 실제 게시물 수
+- ✅ **실시간 동기화**: 새 게시물 추가 시 자동 업데이트
+- ✅ **성능 최적화**: 캐싱으로 빠른 로딩
+
+**추가 디버깅**:
+
+```bash
+# 캐시 무효화 (Vercel 대시보드에서)
+# Settings → Functions → Clear Cache
+
+# 수동 재배포
+git commit --allow-empty -m "🔄 태그 캐시 무효화"
+git push origin main
+```
+
+### **React use() 훅 런타임 에러**
+
+**문제**: `Error: An unsupported type was passed to use(): [object Object]` 에러 발생
+
+**원인**: `use()` 훅에 Promise가 아닌 이미 해결된 배열을 전달
+
+**해결방법**:
+
+1. **Promise 전달 방식으로 수정**:
+
+   ```typescript
+   // ❌ 잘못된 방식
+   const tags = await getTags(); // 이미 해결됨
+   <TagSectionClient tags={tags} /> // 배열 전달
+
+   // ✅ 올바른 방식
+   const tagsPromise = getTags(); // Promise 그대로
+   <TagSectionClient tags={tagsPromise} /> // Promise 전달
+   ```
+
+2. **타입 정의 확인**:
+
+   ```typescript
+   interface TagSectionProps {
+     tags: Promise<TagFilterItem[]>; // Promise 타입
+     selectedTag: string;
+   }
+   ```
+
+**use() 훅 동작 원리**:
+
+- Promise를 받아서 자동으로 해결
+- Suspense와 함께 사용하여 로딩 상태 처리
+- 서버 컴포넌트에서 클라이언트 컴포넌트로 데이터 전달
