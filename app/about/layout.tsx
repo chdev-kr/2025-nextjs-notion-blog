@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Code2, User, Briefcase, Newspaper, Coffee, Github } from 'lucide-react';
+import { Code2, User, Briefcase, Coffee, Github } from 'lucide-react';
 
 interface AboutLayoutProps {
   children: ReactNode;
@@ -8,20 +8,20 @@ interface AboutLayoutProps {
 
 const menuItems = [
   { icon: User, label: '프로필', href: '/about' },
-  { icon: Code2, label: '기술 스택', href: '/about/skills' },
+  // { icon: Code2, label: '기술 스택', href: '#tech-stack', anchor: true },
   { icon: Briefcase, label: '프로젝트', href: '/about/projects' },
-  { icon: Newspaper, label: '블로그', href: '/about/blog' },
+  // { icon: Newspaper, label: '블로그', href: '/about/blog' },
   { icon: Coffee, label: '컨택', href: '/about/contact' },
-  { icon: Github, label: 'Github', href: 'https://github.com', external: true },
+  { icon: Github, label: 'Github', href: 'https://github.com/chdev-kr/chdev-kr', external: true },
 ];
 
 export default function AboutLayout({ children }: AboutLayoutProps) {
   return (
-    <div className="container py-8">
-      <div className="flex gap-8">
-        {/* 사이드바 */}
-        <aside className="w-64 shrink-0">
-          <nav className="bg-card sticky top-8 space-y-1 rounded-lg border p-4">
+    <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* 상단 네비게이션 */}
+      <nav className="mb-8">
+        <div className="bg-card rounded-lg border p-2 shadow-sm">
+          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
             {menuItems.map((item) => (
               <Link
                 key={item.label}
@@ -33,15 +33,15 @@ export default function AboutLayout({ children }: AboutLayoutProps) {
                 })}
               >
                 <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <span className="hidden sm:inline">{item.label}</span>
               </Link>
             ))}
-          </nav>
-        </aside>
+          </div>
+        </div>
+      </nav>
 
-        {/* 메인 콘텐츠 */}
-        <main className="flex-1">{children}</main>
-      </div>
+      {/* 메인 콘텐츠 */}
+      <main className="w-full">{children}</main>
     </div>
   );
 }
