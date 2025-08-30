@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Code2, User, Briefcase, Coffee, Github } from 'lucide-react';
+import { User, Briefcase, Coffee, Github } from 'lucide-react';
 
 interface AboutLayoutProps {
   children: ReactNode;
