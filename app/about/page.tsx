@@ -84,7 +84,7 @@ export default function About() {
       description: [
         'Python을 활용한 데이터 수집/분석',
         'AI/SW 교육 기획 및 운영',
-        '강의안 작성 및 교육 자료 개발',
+        '교육 설계 및 AI/SW 교재 개발',
       ],
     },
   ];
