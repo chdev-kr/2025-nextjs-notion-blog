@@ -203,7 +203,7 @@ export const getTags = unstable_cache(
   undefined,
   {
     tags: ['tags'], // 별도의 캐시 태그 사용
-    revalidate: 3600, // 1시간마다 재검증
+    revalidate: 60, // 1분마다 재검증
   }
 );
 

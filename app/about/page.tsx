@@ -80,7 +80,7 @@ export default function About() {
     {
       company: '대전 소재 E사',
       period: '2021.11 - 2025.03',
-      role: '데이터 분석 / 교육 기획 / 콘텐츠 제작',
+      role: '데이터 분석 / 교육 기획 / 교육 콘텐츠 제작',
       description: [
         'Python을 활용한 데이터 수집/분석',
         'AI/SW 교육 기획 및 운영',
