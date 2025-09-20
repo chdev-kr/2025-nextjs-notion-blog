@@ -226,3 +226,47 @@
   @apply mx-auto max-w-6xl px-4;
   width: 100%;
 }
+
+/* MDX 콘텐츠 내 이미지 스타일링 */
+.prose img {
+  @apply mx-auto block;
+}
+
+/* GIF 이미지 특별 스타일링 - 더 강력한 우선순위 */
+.prose img[src$='.gif'],
+.prose img[src$='.GIF'],
+.prose img[src*='.gif'],
+.prose img[src*='.GIF'] {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 1.5rem auto !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  object-fit: contain !important;
+}
+
+/* GIF 이미지 클래스 스타일링 */
+.gif-image {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 1.5rem auto !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  object-fit: contain !important;
+}
+
+/* 일반 이미지 스타일링 */
+.prose img:not([src$='.gif']):not([src$='.GIF']):not(.gif-image) {
+  @apply h-auto max-w-full rounded-md;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 1rem auto;
+}

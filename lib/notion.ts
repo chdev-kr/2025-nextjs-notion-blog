@@ -68,7 +68,10 @@ function getPostMetadata(page: PageObjectResponse): Post {
 
   return {
     id: page.id,
-    title: properties.Title.type === 'title' ? (properties.Title.title[0]?.plain_text ?? '') : '',
+    title:
+      properties.Title.type === 'title'
+        ? properties.Title.title.map((text) => text.plain_text).join('')
+        : '',
     description:
       properties.Description.type === 'rich_text'
         ? (properties.Description.rich_text[0]?.plain_text ?? '')

@@ -202,9 +202,9 @@ export default async function BlogPost({ params }: BlogPostProps) {
       />
 
       <div className="container py-6 md:py-8 lg:py-12">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_1fr_240px] md:gap-8">
-          <aside className="hidden md:block">{/* 추후 콘텐츠 추가 */}</aside>
-          <section className="overflow-hidden">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[200px_1fr_200px] lg:gap-12">
+          <aside className="hidden lg:block">{/* 추후 콘텐츠 추가 */}</aside>
+          <section className="min-w-0">
             {/* 블로그 헤더 */}
             <div className="space-y-4">
               <div className="space-y-2">
@@ -231,8 +231,8 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
             <Separator className="my-8" />
 
-            {/* 모바일 전용 목차 */}
-            <div className="sticky top-[var(--sticky-top)] mb-6 md:hidden">
+            {/* 모바일/태블릿 전용 목차 */}
+            <div className="sticky top-[var(--sticky-top)] mb-6 lg:hidden">
               <details className="bg-muted/60 rounded-lg p-4 backdrop-blur-sm">
                 <summary className="cursor-pointer text-lg font-semibold">목차</summary>
                 <nav className="mt-3 space-y-3 text-sm">
@@ -244,7 +244,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
             </div>
 
             {/* 블로그 본문 */}
-            <div className="prose prose-neutral dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] max-w-none">
+            <div className="prose prose-neutral dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] prose-lg max-w-none">
               <MDXRemote
                 source={markdown}
                 options={{
@@ -261,7 +261,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
             {/* 이전/다음 포스트 네비게이션 */}
             <GiscusComments />
           </section>
-          <aside className="relative hidden md:block">
+          <aside className="relative hidden lg:block">
             <div className="sticky top-[var(--sticky-top)]">
               <div className="bg-muted/60 space-y-4 rounded-lg p-6 backdrop-blur-sm">
                 <h3 className="text-lg font-semibold">목차</h3>
