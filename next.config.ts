@@ -27,7 +27,39 @@ const nextConfig: NextConfig = {
       {
         hostname: 'www.books.weniv.co.kr',
       },
+      {
+        hostname: 's3.us-west-2.amazonaws.com',
+      },
+      {
+        hostname: 'notion.so',
+      },
+      {
+        hostname: 'notion-static.com',
+      },
+      {
+        hostname: 'notionusercontent.com',
+      },
+      {
+        hostname: '*.notion.so',
+      },
+      {
+        hostname: '*.notion-static.com',
+      },
+      {
+        hostname: '*.notionusercontent.com',
+      },
     ],
+    // 이미지 최적화 설정
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60 * 60 * 24 * 7, // 7일 캐시
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // 이미지 크기 최적화
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // 서명된 URL을 위한 설정
+    unoptimized: false, // 기본적으로는 최적화 활성화
+    loader: 'default', // 기본 로더 사용
   },
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'mdx', 'md'],
   // 사이트맵 관련 설정 추가

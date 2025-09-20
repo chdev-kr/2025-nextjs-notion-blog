@@ -19,14 +19,51 @@ function getPostMetadata(page: PageObjectResponse): Post {
   const getCoverImage = (cover: PageObjectResponse['cover']) => {
     if (!cover) return '';
 
+    let imageUrl = '';
     switch (cover.type) {
       case 'external':
-        return cover.external.url;
+        imageUrl = cover.external.url;
+        break;
       case 'file':
-        return cover.file.url;
+        imageUrl = cover.file.url;
+        break;
       default:
         return '';
     }
+
+    // Notion 이미지 URL 최적화 (서명된 URL 고려)
+    if (imageUrl) {
+      // AWS S3 서명된 URL인지 확인 (파라미터 추가 시 서명 무효화됨)
+      const isSignedUrl =
+        imageUrl.includes('X-Amz-Signature') ||
+        imageUrl.includes('X-Amz-Algorithm') ||
+        imageUrl.includes('X-Amz-Credential');
+
+      if (isSignedUrl) {
+        // 서명된 URL은 그대로 반환 (파라미터 추가 시 403 에러 발생)
+        // PostCard 컴포넌트에서 unoptimized=true로 처리하여 최적화
+        return imageUrl;
+      }
+
+      // 일반 Notion 이미지 URL인 경우에만 최적화 적용
+      const isNotionImage =
+        imageUrl.includes('notion.so') ||
+        imageUrl.includes('notion-static.com') ||
+        imageUrl.includes('notionusercontent.com');
+
+      if (isNotionImage) {
+        // 이미 최적화 파라미터가 있는지 확인
+        if (imageUrl.includes('width=') || imageUrl.includes('quality=')) {
+          return imageUrl; // 이미 최적화된 경우 그대로 반환
+        }
+
+        // Notion 이미지 URL에 최적화 파라미터 추가 (품질을 75%로 조정)
+        const separator = imageUrl.includes('?') ? '&' : '?';
+        return `${imageUrl}${separator}width=800&quality=75`;
+      }
+    }
+
+    return imageUrl;
   };
 
   return {

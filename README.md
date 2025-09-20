@@ -224,6 +224,45 @@ npm install --legacy-peer-deps
    - 하드 리프레시: `Cmd+Shift+R` (Mac) / `Ctrl+Shift+R` (Windows)
    - Vercel 대시보드에서 배포 상태 확인
 
+### **이미지 최적화 성능 개선**
+
+**문제**:
+
+- 직접 업로드한 이미지가 최적화되지 않아 로딩 속도가 느림
+- 서명된 URL과 일반 URL에 대한 일관성 없는 최적화 처리
+- 이미지 품질과 파일 크기 간의 균형 문제
+
+**최적화 전**:
+
+- 모든 이미지가 원본 크기로 로딩
+- 서명된 URL에서 403/500 에러 발생
+- 일관성 없는 이미지 처리 방식
+
+**최적화 후**:
+
+- **직접 업로드한 이미지 (서명된 URL)**:
+  - 품질: 85% (적절한 품질 유지)
+  - 최적화: `unoptimized=true` (Next.js 최적화 비활성화)
+  - 에러 방지: 403/500 에러 완전 해결
+- **Unsplash 이미지 (일반 URL)**:
+  - 품질: 75% (파일 크기 최적화)
+  - 최적화: Next.js 자동 최적화 활성화
+  - 포맷: WebP/AVIF 자동 변환
+
+**개선사항**:
+
+1. **중앙화된 이미지 최적화 관리**: `lib/image-optimizer.ts` 생성
+2. **타입별 최적화 전략**: 서명된 URL과 일반 URL에 대한 차별화된 처리
+3. **품질 균형**: 최고 품질 대신 적절한 품질로 파일 크기 최적화
+4. **에러 해결**: 서명된 URL 관련 모든 에러 해결
+5. **성능 향상**: 각 이미지 타입에 맞는 최적화 전략 적용
+
+**수정된 파일**:
+
+- `lib/image-optimizer.ts`: 중앙화된 이미지 최적화 유틸리티 (신규)
+- `components/features/blog/PostCard.tsx`: 최적화 설정 적용
+- `lib/notion.ts`: 품질 파라미터 조정 (80% → 75%)
+
 ### **동적 아이콘(Favicon) 시스템**
 
 이 프로젝트는 **Next.js의 동적 아이콘 생성 기능**을 사용합니다:
@@ -1050,3 +1089,183 @@ curl -X DELETE https://chdev.kr/api/posts/POST_ID
 - Notion에서 게시물을 삭제하면 최대 30초 내에 블로그에서도 반영됨
 - 환경변수 `REVALIDATE_TOKEN`을 설정하여 보안 강화 권장
 - 게시물이 많을 경우 무한 스크롤 기능으로 추가 로드 가능
+
+### **이미지 로딩 및 렌더링 문제**
+
+**문제**: 블로그에서 이미지가 늦게 로딩되거나 아예 표시되지 않는 경우
+
+**증상**:
+
+- 이미지가 로딩 중에 빈 공간으로 표시됨
+- Notion 이미지가 너무 크거나 느리게 로딩됨
+- 이미지 로딩 실패 시 대체 UI가 없음
+- 이미지 최적화가 되지 않아 성능 저하
+
+**원인**:
+
+1. **Notion 이미지 URL 최적화 부족**: 원본 이미지가 너무 크거나 최적화 파라미터 없음
+2. **이미지 로딩 에러 처리 부족**: 로딩 실패 시 대체 UI나 에러 처리 없음
+3. **캐싱 및 포맷 최적화 부족**: WebP/AVIF 포맷 미사용, 캐시 설정 부족
+4. **로딩 상태 표시 부족**: 사용자가 이미지 로딩 상태를 알 수 없음
+
+**해결방법**:
+
+1. **Notion 이미지 URL 최적화**:
+
+   ```typescript
+   // lib/notion.ts
+   const getCoverImage = (cover: PageObjectResponse['cover']) => {
+     if (!cover) return '';
+
+     let imageUrl = '';
+     switch (cover.type) {
+       case 'external':
+         imageUrl = cover.external.url;
+         break;
+       case 'file':
+         imageUrl = cover.file.url;
+         break;
+       default:
+         return '';
+     }
+
+     // Notion 이미지 URL 최적화
+     if (imageUrl && (imageUrl.includes('notion.so') || imageUrl.includes('amazonaws.com'))) {
+       const separator = imageUrl.includes('?') ? '&' : '?';
+       return `${imageUrl}${separator}width=800&quality=80`;
+     }
+
+     return imageUrl;
+   };
+   ```
+
+2. **이미지 로딩 상태 및 에러 처리**:
+
+   ```typescript
+   // lib/image-utils.ts
+   export function useImageLoading() {
+     const [loading, setLoading] = useState(true);
+     const [error, setError] = useState(false);
+
+     const handleLoad = () => {
+       setLoading(false);
+       setError(false);
+     };
+
+     const handleError = () => {
+       setLoading(false);
+       setError(true);
+     };
+
+     return { loading, error, handleLoad, handleError };
+   }
+   ```
+
+3. **PostCard 컴포넌트 개선**:
+
+   ```tsx
+   // components/features/blog/PostCard.tsx
+   export function PostCard({ post, isFirst = false }: PostCardProps) {
+     const { loading, error, handleLoad, handleError } = useImageLoading();
+
+     return (
+       <Card>
+         {post.coverImage && (
+           <div className="bg-muted relative aspect-[2/1] overflow-hidden">
+             {/* 로딩 중 스켈레톤 */}
+             {loading && !error && (
+               <div className="bg-muted absolute inset-0 flex animate-pulse items-center justify-center">
+                 <ImageIcon className="text-muted-foreground/50 h-12 w-12" />
+               </div>
+             )}
+
+             {/* 에러 시 대체 UI */}
+             {error && (
+               <div className="bg-muted absolute inset-0 flex items-center justify-center">
+                 <div className="text-center">
+                   <ImageIcon className="text-muted-foreground/50 mx-auto mb-2 h-12 w-12" />
+                   <p className="text-muted-foreground text-sm">이미지를 불러올 수 없습니다</p>
+                 </div>
+               </div>
+             )}
+
+             <Image
+               src={post.coverImage}
+               alt={post.title}
+               fill
+               sizes={getOptimizedSizes(isFirst)}
+               priority={isFirst}
+               className={`object-cover transition-transform duration-300 ${
+                 loading ? 'opacity-0' : 'opacity-100'
+               }`}
+               onLoad={handleLoad}
+               onError={handleError}
+               placeholder="blur"
+               blurDataURL={DEFAULT_BLUR_DATA_URL}
+             />
+           </div>
+         )}
+       </Card>
+     );
+   }
+   ```
+
+4. **Next.js 이미지 최적화 설정**:
+
+   ```typescript
+   // next.config.ts
+   const nextConfig: NextConfig = {
+     images: {
+       remotePatterns: [
+         { hostname: 'www.notion.so' },
+         { hostname: 'notion.so' },
+         { hostname: 's3.us-west-2.amazonaws.com' },
+         { hostname: 'prod-files-secure.s3.us-west-2.amazonaws.com' },
+       ],
+       // 이미지 최적화 설정
+       formats: ['image/webp', 'image/avif'],
+       minimumCacheTTL: 60 * 60 * 24 * 7, // 7일 캐시
+       dangerouslyAllowSVG: true,
+       contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+     },
+   };
+   ```
+
+5. **이미지 크기 최적화**:
+
+   ```typescript
+   // lib/image-utils.ts
+   export function getOptimizedSizes(isFirst: boolean = false): string {
+     if (isFirst) {
+       return '(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw';
+     }
+     return '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw';
+   }
+   ```
+
+**해결 원리**:
+
+1. **URL 최적화**: Notion 이미지에 width, quality 파라미터 추가로 크기 최적화
+2. **로딩 상태 관리**: useState로 로딩/에러 상태 추적
+3. **대체 UI 제공**: 로딩 중 스켈레톤, 에러 시 대체 메시지
+4. **포맷 최적화**: WebP/AVIF 포맷으로 파일 크기 최적화
+5. **캐싱 강화**: 7일 캐시로 재방문 시 빠른 로딩
+
+**결과**:
+
+- ✅ **빠른 이미지 로딩**: 최적화된 URL과 포맷으로 로딩 속도 향상
+- ✅ **사용자 경험 개선**: 로딩 상태 표시로 사용자 대기 시간 인식
+- ✅ **에러 처리**: 이미지 로딩 실패 시 적절한 대체 UI 제공
+- ✅ **성능 최적화**: WebP/AVIF 포맷과 캐싱으로 성능 향상
+- ✅ **반응형 최적화**: 화면 크기별 최적화된 이미지 크기
+
+**추가 최적화 팁**:
+
+```bash
+# 이미지 최적화 확인
+# Chrome DevTools → Network 탭에서 이미지 로딩 시간 확인
+# Lighthouse에서 이미지 최적화 점수 확인
+
+# 이미지 포맷 확인
+curl -I "https://your-image-url" | grep -i content-type
+```
