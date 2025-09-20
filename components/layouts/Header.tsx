@@ -14,9 +14,10 @@ export default function Header() {
             <Link href="/" className="hover:text-primary font-medium">
               홈
             </Link>
-            <Link href="/blog" className="hover:text-primary font-medium">
-              블로그
-            </Link>
+            {/* 나중에 사용할 수 있도록 주석처리 */}
+            {/* <Link href="/blog" className="hover:text-primary font-medium">
+              포트폴리오
+            </Link> */}
             <Link href="/about" prefetch={false} className="hover:text-primary font-medium">
               소개
             </Link>

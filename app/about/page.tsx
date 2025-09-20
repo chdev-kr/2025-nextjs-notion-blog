@@ -16,6 +16,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 export default function About() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -114,8 +115,21 @@ export default function About() {
     <div className="w-full">
       <div className="space-y-6 sm:space-y-8">
         {/* 헤더 섹션 */}
-        <div className="space-y-4 text-center">
+        <div className="space-y-6 text-center">
           <div className="animate-fade-in">
+            {/* 프로필 이미지 */}
+            <div className="mb-6 flex justify-center">
+              <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-lg sm:h-40 sm:w-40 dark:border-gray-800">
+                <Image
+                  src="/images/profile-about.jpg"
+                  alt={`${personalInfo.name} 프로필 사진`}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
+
             <h1 className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl dark:from-slate-200 dark:via-slate-300 dark:to-slate-400">
               {personalInfo.name}
             </h1>

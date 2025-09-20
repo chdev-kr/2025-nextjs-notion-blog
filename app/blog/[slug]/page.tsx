@@ -69,13 +69,13 @@ export async function generateMetadata({
   if (!post) {
     return {
       title: '포스트를 찾을 수 없습니다',
-      description: '요청하신 블로그 포스트를 찾을 수 없습니다.',
+      description: '요청하신 포스트를 찾을 수 없습니다.',
     };
   }
 
   return {
     title: post.title,
-    description: post.description || `${post.title} - chDEV 블로그`,
+    description: post.description || `${post.title} - chDEV 포스트`,
     keywords: post.tags,
     authors: [{ name: post.author || 'chDEV' }],
     publisher: 'chDEV',

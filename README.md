@@ -360,22 +360,22 @@ export default function Icon() {
        type: 'website',
        locale: 'ko_KR',
        url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-       title: '김채현 블로그',
-       description: '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 블로그입니다.',
-       siteName: '김채현 블로그',
+       title: '김채현 기록장',
+       description: '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 기록장입니다.',
+       siteName: 'chDEV 놀이터',
        images: [
          {
            url: '/opengraph-image',
            width: 1200,
            height: 630,
-           alt: '김채현 블로그 OG 이미지',
+           alt: '김채현 포트폴리오 OG 이미지',
          },
        ],
      },
      twitter: {
        card: 'summary_large_image',
-       title: '김채현 블로그',
-       description: '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 블로그입니다.',
+       title: '김채현 포트폴리오',
+       description: '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 기록장입니다.',
        images: ['/opengraph-image'],
      },
    };
@@ -386,25 +386,25 @@ export default function Icon() {
    ```tsx
    export const metadata: Metadata = {
      title: '홈',
-     description: '프론트엔드 개발자 김채현의 블로그입니다.',
+     description: '프론트엔드 개발자 김채현의 포트폴리오입니다.',
      openGraph: {
-       title: '김채현 블로그 - 홈',
-       description: '프론트엔드 개발자 김채현의 블로그입니다.',
+       title: '김채현 기록장 - 홈',
+       description: '프론트엔드 개발자 김채현의 포트폴리오입니다.',
        url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-       siteName: '김채현 블로그',
+       siteName: '김채현 포트폴리오',
        images: [
          {
            url: '/opengraph-image',
            width: 1200,
            height: 630,
-           alt: '김채현 블로그 OG 이미지',
+           alt: '김채현 포트폴리오 OG 이미지',
          },
        ],
      },
      twitter: {
        card: 'summary_large_image',
-       title: '김채현 블로그 - 홈',
-       description: '프론트엔드 개발자 김채현의 블로그입니다.',
+       title: '김채현 포트폴리오 - 홈',
+       description: '프론트엔드 개발자 김채현의 포트폴리오.',
        images: ['/opengraph-image'],
      },
    };

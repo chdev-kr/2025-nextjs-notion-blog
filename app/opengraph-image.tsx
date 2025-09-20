@@ -34,7 +34,7 @@ export default function OgImage() {
             fontWeight: 'bold',
           }}
         >
-          chDEV 블로그
+          chDEV 포트폴리오
         </div>
         <div
           style={{
@@ -44,7 +44,7 @@ export default function OgImage() {
             color: '#cccccc',
           }}
         >
-          프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 블로그입니다.
+          프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 기록장입니다.
         </div>
       </div>
     ),

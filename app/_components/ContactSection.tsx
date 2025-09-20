@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Megaphone, BookOpen, HandshakeIcon } from 'lucide-react';
+import { Megaphone, HandshakeIcon } from 'lucide-react';
 
 const contactItems = [
   {
@@ -12,16 +12,16 @@ const contactItems = [
       body: '브랜드/제품명:\n제안 내용:\n기간:\n예산:',
     },
   },
-  {
-    icon: BookOpen,
-    title: '강의 문의',
-    description: '기술 강의, 워크샵, 세미나 진행',
-    mailto: {
-      email: 'chkim.dev@gmail.com',
-      subject: '[강의] 문의',
-      body: '강의 주제:\n예상 인원:\n희망 일정:\n문의 내용:',
-    },
-  },
+  // {
+  //   icon: BookOpen,
+  //   title: '강의 문의',
+  //   description: '기술 강의, 워크샵, 세미나 진행',
+  //   mailto: {
+  //     email: 'chkim.dev@gmail.com',
+  //     subject: '[강의] 문의',
+  //     body: '강의 주제:\n예상 인원:\n희망 일정:\n문의 내용:',
+  //   },
+  // },
   {
     icon: HandshakeIcon,
     title: '기타 문의',

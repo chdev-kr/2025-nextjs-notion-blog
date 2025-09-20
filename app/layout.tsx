@@ -18,11 +18,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | chDEV 블로그',
-    default: 'chDEV 블로그',
+    template: '%s | chDEV 포트폴리오',
+    default: 'chDEV 포트폴리오',
   },
   description:
-    '프론트엔드 개발과 관련된 다양한 지식과 경험을 공유하는 블로그입니다. Next.js, React, TypeScript 등 최신 웹 기술에 대한 실용적인 가이드를 제공합니다.',
+    'Next.js, React, Three.js 등 최신 웹 기술을 활용한 경험을 담은 프론트엔드 chDEV의 포트폴리오입니다.',
   keywords: [
     'Next.js',
     'React',

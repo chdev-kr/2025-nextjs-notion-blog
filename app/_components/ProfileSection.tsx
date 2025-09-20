@@ -48,7 +48,9 @@ export default function ProfileSection() {
             ))}
           </div>
 
-          <p className="bg-primary/10 rounded p-2 text-center text-sm">프론트엔드 개발자 💻</p>
+          <p className="bg-primary/10 rounded p-2 text-center text-sm">
+            <strong>열정과 집념의 개발자 🔥</strong>
+          </p>
         </div>
       </CardContent>
     </Card>

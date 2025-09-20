@@ -72,7 +72,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
               marginBottom: 20,
             }}
           >
-            chDEV 블로그
+            chDEV 포트폴리오
           </div>
           <div
             style={{
