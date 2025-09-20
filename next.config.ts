@@ -7,9 +7,6 @@ const nextConfig: NextConfig = {
   // experimental: {
   //   typedRoutes: true,
   // },
-  turbopack: {
-    // turbopack 설정 추가
-  },
   images: {
     remotePatterns: [
       {

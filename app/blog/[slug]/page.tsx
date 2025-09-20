@@ -136,24 +136,54 @@ interface BlogPostProps {
   params: Promise<{ slug: string }>;
 }
 
+// 마크다운 정리 함수
+function sanitizeMarkdown(markdown: string): string {
+  // JSX 태그에서 잘못된 문자 제거
+  return (
+    markdown
+      // 태그 이름에 괄호가 포함된 경우 제거
+      .replace(/<([a-zA-Z][a-zA-Z0-9]*?)\(/g, '<$1')
+      .replace(/<([a-zA-Z][a-zA-Z0-9]*?)\)/g, '<$1')
+      // 속성에서 괄호 제거
+      .replace(/\s+\([^)]*\)/g, '')
+      // 잘못된 JSX 태그 패턴 수정
+      .replace(/<([^>]*?)\(([^>]*?)>/g, '<$1 $2>')
+      .replace(/<([^>]*?)\)([^>]*?)>/g, '<$1 $2>')
+      // 빈 속성 제거
+      .replace(/\s+[a-zA-Z-]+=""/g, '')
+      .replace(/\s+[a-zA-Z-]+=''/g, '')
+  );
+}
+
 export default async function BlogPost({ params }: BlogPostProps) {
   const { slug } = await params;
-  const { markdown, post } = await getPostBySlug(slug);
+  const { markdown: rawMarkdown, post } = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const { data } = await compile(markdown, {
-    rehypePlugins: [
-      withSlugs,
-      rehypeSanitize,
-      withToc,
-      withTocExport,
-      /** Optionally, provide a custom name for the export. */
-      // [withTocExport, { name: 'toc' }],
-    ],
-  });
+  // 마크다운 정리
+  const markdown = sanitizeMarkdown(rawMarkdown);
+
+  let data;
+  try {
+    const result = await compile(markdown, {
+      rehypePlugins: [
+        withSlugs,
+        rehypeSanitize,
+        withToc,
+        withTocExport,
+        /** Optionally, provide a custom name for the export. */
+        // [withTocExport, { name: 'toc' }],
+      ],
+    });
+    data = result.data;
+  } catch (error) {
+    console.error('MDX 컴파일 에러:', error);
+    // MDX 컴파일 실패 시 빈 목차로 처리
+    data = { toc: [] };
+  }
 
   // 구조화된 데이터 JSON-LD 스크립트
   const structuredData = generateStructuredData({

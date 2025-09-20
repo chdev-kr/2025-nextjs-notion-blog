@@ -2,9 +2,12 @@ import { notion } from '@/lib/notion';
 import { revalidateTag } from 'next/cache';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Notion에서 페이지를 아카이브 처리 (실제 삭제가 아닌 아카이브)
     await notion.pages.update({

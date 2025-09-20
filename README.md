@@ -263,6 +263,16 @@ npm install --legacy-peer-deps
 - `components/features/blog/PostCard.tsx`: 최적화 설정 적용
 - `lib/notion.ts`: 품질 파라미터 조정 (80% → 75%)
 
+**CDN 도입 검토 및 대안 선택**:
+
+- **Cloudinary CDN 설치**: `npm install cloudinary`로 CDN 라이브러리 설치
+- **자체 최적화 시스템 선택**: CDN 대신 Next.js 내장 최적화 + 커스텀 로직으로 해결
+- **선택 이유**:
+  - CDN 추가 비용 및 복잡성 회피
+  - Next.js Image 컴포넌트의 충분한 최적화 기능 활용
+  - 서명된 URL 문제를 더 간단하게 해결
+- **향후 확장성**: 필요시 Cloudinary나 ImageKit 등 CDN으로 쉽게 마이그레이션 가능
+
 ### **동적 아이콘(Favicon) 시스템**
 
 이 프로젝트는 **Next.js의 동적 아이콘 생성 기능**을 사용합니다:
