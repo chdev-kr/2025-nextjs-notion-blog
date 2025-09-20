@@ -18,7 +18,7 @@ export default function PostList({ postsPromise }: PostListProps) {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
   const sort = searchParams.get('sort');
-  const pageSize = 2;
+  const pageSize = 10; // 더 많은 게시물을 한 번에 로드
 
   const fetchPosts = async ({ pageParam }: { pageParam: string | undefined }) => {
     const params = new URLSearchParams();

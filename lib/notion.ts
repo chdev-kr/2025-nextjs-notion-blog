@@ -114,7 +114,7 @@ export const getPublishedPosts = unstable_cache(
   async ({
     tag = '전체',
     sort = 'latest',
-    pageSize = 2,
+    pageSize = 10, // 홈페이지에서 더 많은 게시물 표시
     startCursor,
   }: GetPublishedPostsParams = {}): Promise<GetPublishedPostsResponse> => {
     const response = await notion.databases.query({
@@ -161,7 +161,8 @@ export const getPublishedPosts = unstable_cache(
   },
   undefined,
   {
-    tags: ['posts'],
+    tags: ['notion-posts'], // 통일된 캐시 태그 사용
+    revalidate: 30, // 30초마다 재검증
   }
 );
 
@@ -202,8 +203,8 @@ export const getTags = unstable_cache(
   },
   undefined,
   {
-    tags: ['tags'], // 별도의 캐시 태그 사용
-    revalidate: 60, // 1분마다 재검증
+    tags: ['notion-posts'], // getPublishedPosts와 같은 캐시 태그 사용
+    revalidate: 30, // 30초마다 재검증 (getPublishedPosts와 동일)
   }
 );
 
@@ -254,14 +255,12 @@ export const createPost = async ({ title, tag, content }: CreatePostParams) => {
   });
 
   // 새 포스트 생성 후 캐시 무효화
-  revalidateTag('posts');
-  revalidateTag('tags');
+  revalidateTag('notion-posts');
 
   return response;
 };
 
 // 캐시 무효화 함수
 export const revalidateCache = () => {
-  revalidateTag('posts');
-  revalidateTag('tags');
+  revalidateTag('notion-posts');
 };

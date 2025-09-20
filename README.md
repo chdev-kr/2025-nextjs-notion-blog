@@ -859,3 +859,194 @@ git push origin main
 - Promise를 받아서 자동으로 해결
 - Suspense와 함께 사용하여 로딩 상태 처리
 - 서버 컴포넌트에서 클라이언트 컴포넌트로 데이터 전달
+
+### **Notion 게시물 삭제 후 블로그에 여전히 표시되는 문제**
+
+**문제**: Notion에서 게시물을 삭제했는데 블로그 사이트에서는 여전히 해당 게시물이 표시되는 경우
+
+**증상**:
+
+- 홈페이지에서 삭제된 게시물이 여전히 보임
+- 태그 목록에서는 삭제된 게시물이 보이지 않음 (태그별 필터링 시)
+- 전체 목록과 태그별 목록 간 데이터 불일치
+
+**원인**:
+
+1. **캐시 불일치**: `getPublishedPosts`와 `getTags` 함수가 서로 다른 캐시 태그 사용
+2. **캐시 재검증 시간 차이**: 서로 다른 주기로 캐시가 갱신되어 동기화 문제 발생
+3. **캐시 무효화 부족**: 게시물 삭제 시 캐시가 자동으로 무효화되지 않음
+
+**해결방법**:
+
+1. **캐시 태그 통일**:
+
+   ```typescript
+   // lib/notion.ts
+   export const getPublishedPosts = unstable_cache(
+     async ({ tag = '전체', sort = 'latest', pageSize = 10, startCursor }) => {
+       // ... 게시물 조회 로직
+     },
+     undefined,
+     {
+       tags: ['notion-posts'], // 통일된 캐시 태그 사용
+       revalidate: 30, // 30초마다 재검증
+     }
+   );
+
+   export const getTags = unstable_cache(
+     async (): Promise<TagFilterItem[]> => {
+       const { posts } = await getPublishedPosts({ pageSize: 100 });
+       // ... 태그 계산 로직
+     },
+     undefined,
+     {
+       tags: ['notion-posts'], // getPublishedPosts와 같은 캐시 태그 사용
+       revalidate: 30, // 30초마다 재검증 (getPublishedPosts와 동일)
+     }
+   );
+   ```
+
+2. **캐시 무효화 개선**:
+
+   ```typescript
+   // lib/notion.ts
+   import { revalidateTag } from 'next/cache';
+
+   // 캐시 무효화 함수
+   export const revalidateCache = () => {
+     revalidateTag('notion-posts');
+   };
+
+   // 새 포스트 생성 시 자동 캐시 무효화
+   export const createPost = async ({ title, tag, content }: CreatePostParams) => {
+     const response = await notion.pages.create({
+       // ... 포스트 생성 로직
+     });
+
+     // 새 포스트 생성 후 캐시 무효화
+     revalidateTag('notion-posts');
+
+     return response;
+   };
+   ```
+
+3. **게시물 삭제 API 추가**:
+
+   ```typescript
+   // app/api/posts/[id]/route.ts
+   import { notion } from '@/lib/notion';
+   import { revalidateTag } from 'next/cache';
+
+   export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+     try {
+       const { id } = params;
+
+       // Notion에서 페이지를 아카이브 처리 (실제 삭제가 아닌 아카이브)
+       await notion.pages.update({
+         page_id: id,
+         archived: true,
+       });
+
+       // 캐시 무효화
+       revalidateTag('notion-posts');
+
+       return NextResponse.json({ success: true, message: '게시물이 삭제되었습니다.' });
+     } catch (error) {
+       console.error('게시물 삭제 중 오류 발생:', error);
+       return NextResponse.json(
+         { success: false, message: '게시물 삭제에 실패했습니다.' },
+         { status: 500 }
+       );
+     }
+   }
+   ```
+
+4. **수동 캐시 무효화 API**:
+
+   ```typescript
+   // app/api/revalidate/route.ts
+   import { revalidateTag } from 'next/cache';
+
+   export async function POST(request: NextRequest) {
+     try {
+       // 보안을 위해 특정 토큰이나 헤더를 확인할 수 있습니다
+       const authHeader = request.headers.get('authorization');
+       const expectedToken = process.env.REVALIDATE_TOKEN;
+
+       if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+         return NextResponse.json(
+           { success: false, message: '인증되지 않은 요청입니다.' },
+           { status: 401 }
+         );
+       }
+
+       // 캐시 무효화
+       revalidateTag('notion-posts');
+
+       return NextResponse.json({
+         success: true,
+         message: '캐시가 성공적으로 무효화되었습니다.',
+         timestamp: new Date().toISOString(),
+       });
+     } catch (error) {
+       console.error('캐시 무효화 중 오류 발생:', error);
+       return NextResponse.json(
+         { success: false, message: '캐시 무효화에 실패했습니다.' },
+         { status: 500 }
+       );
+     }
+   }
+   ```
+
+5. **홈페이지 게시물 수 증가**:
+
+   ```typescript
+   // lib/notion.ts
+   export const getPublishedPosts = unstable_cache(
+     async ({
+       tag = '전체',
+       sort = 'latest',
+       pageSize = 10, // 홈페이지에서 더 많은 게시물 표시
+       startCursor,
+     }) => {
+       // ... 게시물 조회 로직
+     }
+   );
+
+   // components/features/blog/PostListSuspense.tsx
+   export default function PostList({ postsPromise }: PostListProps) {
+     const pageSize = 10; // 더 많은 게시물을 한 번에 로드
+     // ... 나머지 로직
+   }
+   ```
+
+**해결 원리**:
+
+1. **캐시 동기화**: 모든 관련 함수가 같은 캐시 태그를 사용하여 일관성 보장
+2. **빠른 재검증**: 30초마다 자동으로 최신 데이터로 업데이트
+3. **자동 무효화**: 게시물 생성/삭제 시 캐시 자동 새로고침
+4. **수동 제어**: 필요시 API를 통해 즉시 캐시 무효화 가능
+
+**결과**:
+
+- ✅ **일관된 데이터**: 게시물 목록과 태그 목록이 항상 동기화됨
+- ✅ **빠른 갱신**: 30초마다 자동으로 캐시가 갱신됨
+- ✅ **수동 제어**: 필요시 API를 통해 캐시를 즉시 무효화 가능
+- ✅ **삭제 지원**: 게시물 삭제 시 캐시가 자동으로 무효화됨
+
+**사용 방법**:
+
+```bash
+# 즉시 캐시 무효화가 필요한 경우
+curl -X POST https://chdev.kr/api/revalidate \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# 게시물 삭제
+curl -X DELETE https://chdev.kr/api/posts/POST_ID
+```
+
+**주의사항**:
+
+- Notion에서 게시물을 삭제하면 최대 30초 내에 블로그에서도 반영됨
+- 환경변수 `REVALIDATE_TOKEN`을 설정하여 보안 강화 권장
+- 게시물이 많을 경우 무한 스크롤 기능으로 추가 로드 가능
