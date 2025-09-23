@@ -13,7 +13,7 @@ const socialLinks = [
   },
   {
     icon: BookOpen,
-    href: 'https://blog.naver.com/datachae',
+    href: 'https://velog.io/@chdev/posts',
   },
   {
     icon: Instagram,
