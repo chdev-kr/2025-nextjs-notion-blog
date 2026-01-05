@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "migrate-images": "tsx scripts/migrate-images.ts"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",
@@ -49,6 +50,7 @@
     "@tanstack/react-query": "^5.67.2",
     "@tanstack/react-query-devtools": "^5.67.3",
     "@types/mdx": "^2.0.13",
+    "@vercel/blob": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
@@ -94,6 +96,7 @@
     "globals": "^15.15.0",
     "prettier": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "tsx": "^4.21.0",
     "tw-animate-css": "^1.2.5",
     "typescript": "^5"
   }

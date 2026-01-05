@@ -45,6 +45,12 @@ const nextConfig: NextConfig = {
       {
         hostname: '*.notionusercontent.com',
       },
+      {
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+      {
+        hostname: 'blob.vercel-storage.com',
+      },
     ],
     // 이미지 최적화 설정
     formats: ['image/webp', 'image/avif'],
